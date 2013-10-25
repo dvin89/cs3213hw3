@@ -52,12 +52,14 @@
 		// perform GET on this.url.
 		fetch: function(){
 			var instance = this;
-			Sync("read", this).done(function(data){
-				//console.log(data);
-				instance.set(data);
-				console.log(instance);
-			});
-		}
+			Sync("read", this);
+		},
+		
+		// perform POST/PUT on this.url.
+		save: function(form){
+			var instance = this;
+			Sync("create", this, form);
+		},
 	});
 	
 	// =========================================================
@@ -102,7 +104,7 @@
 			
 			var args = Array.prototype.slice.call(arguments);
 			args.splice(0, 1);
-			
+		
 			func.apply(this, args);
 		};
 	}
@@ -112,7 +114,7 @@
 	// This is the Sync class.
 	// Responsible for performing Ajax using jquery.
 	// =========================================================
-	var Sync = Barebone.Sync = function(method, model){
+	var Sync = Barebone.Sync = function(method, model, form){
 		// Map from CRUD to HTTP for our default `Backbone.sync` implementation.
         var methodMap = {
             'create': 'POST',
@@ -121,11 +123,32 @@
             'delete': 'DELETE',
             'read':   'GET'
         };
-        
-        return $.ajax({
-            url: model.url,
-            type: methodMap[method]
-        });
+	   
+		if(method == "create" || method == "update"){
+			$(form).ajaxSubmit({
+				url: model.url,
+				dataType: 'json',
+				data: {"access_token": gon.token},
+				method: methodMap[method],
+				error: function(error, err) {
+					alert("Error!");
+				},
+				success: function(msg) {
+					//probably shld call model.set here.
+					alert("success with id:"+msg.id);
+				}
+			});
+		}
+		else{
+			$.ajax({
+				url: model.url,
+				type: methodMap[method],
+				dataType: 'json',
+				success: function(){
+					alert("get model succeed!");
+				}
+			});
+		}
 	}
 	
 	

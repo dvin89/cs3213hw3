@@ -3,18 +3,36 @@
 <head>
   <script src="jquery-1.10.2.min.js"></script>
   <script src="underscore.js"></script>
- <script src="backbone.js"></script>
+  <script src="backbone.js"></script>
   <script src="Barebone.js"></script>
+  <script src="jquery.form.min.js"></script>
 </head>
 <body>
+<div style='margin-left: 20px;' id='movieForm'>
+	<form id='myForm' name='movie' method='POST'>
+		<table>
+			<tr><td colspan=2><h1>Create new movie</h1></td></tr>
+			<tr><td>Title: </td><td><input type='text' name='movie[title]' id='movie_title'></td></tr>
+			<tr><td>Summary: </td><td> <input type='text' name='movie[summary]' id='summary'></td></tr>
+			<tr><td>Image: </td><td> <input type='file' name='movie[img]' id='movie_img'></td></tr>
+			<tr><td colpsan=2 style='text-align: center;'><button onclick='buttonClick()' class='btn btn-primary' id='Create' type='button'>Create</button></td></tr>
+		</table>
+	</form>
+</div>
+
 <script type="text/javascript">
 	// type whatever code you wanted to test here. 
 	// console.log() and alert() function are useful for debugging.
-	var v = Barebone.View.extend({
-		render: function(){alert("rend");}
-	});
 	
-	v.render();
+	function buttonClick(){
+		//on click we create our new movie model
+		var totallyNewMovie = Barebone.Model.extend({
+			url: "http://cs3213.herokuapp.com/movies.json",
+		});
+		
+		//we call save on the new movie model and pass in the form.
+		totallyNewMovie.save(document.getElementById("myForm"));
+	}
 	
 </script>
 
