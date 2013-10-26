@@ -82,14 +82,59 @@
 	// 
 	// =========================================================
 	var View = Barebone.View = function(){
+		this.attributes = {};
+		this.event = new Event();		
 		
-	}
+		// We add default events to handle for view.
+		this.event.on("change", function(){
+			//stub. what to do when view is change?
+		} );
+	};
 	
-	_.extend(View.prototype,{
-	
+	// Methods for View class will be added to View.prototype via _.extend.
+	_.extend(View.prototype, {
+		// This is the view DOM div element. Must be an element id for now.
+		el: "",
+		
+		$el: function(){return $(document.getElementById(this.el));},
+		
+		template: function(templateName, data, settings){
+			_.template(templateName, data, settings);
+		}.
+		
+		// Return whatever is in View.attribute[attributeKey].
+		get: function(attributeKey){
+			return this.attribute[attributeKey];
+		},
+		
+		// Set View.attribute[key] to value -OR- set View.attributes to
+		// whatever is in the {key: value} parameter.
+		set: function(key, value){
+			if (key == null) return this;
+			
+			// Handle both `"key", value` and `{key: value}` -style arguments.
+			if (typeof key === 'object') {	// this is the {key: value} form
+				var obj = key;    //change name to make intent more obvious
+				var keyArr = Object.keys(obj);
+
+				for(var i = 0; i<keyArr.length; i++){
+					if( this.attributes[keyArr[i]] != obj[keyArr[i]]){                    
+						//something changed
+						this.attributes[keyArr[i]] = obj[keyArr[i]];
+						this.event.trigger("change");
+					}
+				}
+			} else {
+				if( this.attributes[key] != value){                    
+					//something changed
+					this.attributes[key] = value;
+					this.event.trigger("change");
+				}
+			}
+		},
+		
 		// Default render is a no-op
-		render: function(){}
-	
+		render: function(){},
 	});
 	
 	// =========================================================
