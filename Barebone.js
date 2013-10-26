@@ -9,8 +9,14 @@
 	// Methods will be added to Model.prototype instead.
 	// =====================================================
 	var Model = Barebone.Model = function(){
+		this.isNew = true;
 		this.attributes = {};
 		this.event = new Event();
+		
+		// We add default events to handle for model.
+		this.event.on("change", function(){
+			//stub. what to do when model is change?
+		} );
 	};
 	
 	// Methods for Model class will be added to Model.prototype via _.extend.
@@ -37,28 +43,37 @@
 					if( this.attributes[keyArr[i]] != obj[keyArr[i]]){                    
 						//something changed
 						this.attributes[keyArr[i]] = obj[keyArr[i]];
-						//shld fire some change events
+						this.event.trigger("change");
 					}
 				}
 			} else {
 				if( this.attributes[key] != value){                    
 					//something changed
 					this.attributes[key] = value;
-					//shld fire some change events
+					this.event.trigger("change");
 				}
 			}
 		},
 		
 		// perform GET on this.url.
-		fetch: function(){
+		fetch: function(options){
 			var instance = this;
-			Sync("read", this);
+			Sync("read", this, null, options);
 		},
 		
 		// perform POST/PUT on this.url.
-		save: function(form){
+		save: function(form, options){
 			var instance = this;
-			Sync("create", this, form);
+			if(this.isNew)
+				Sync("create", this, form, options);
+			else
+				Sync("update", this, form, options);
+		},
+		
+		// perform DELETE on this.url.
+		destroy: function(){
+			var instance = this;
+			Sync("delete", this, null, options);
 		},
 	});
 	
@@ -114,7 +129,7 @@
 	// This is the Sync class.
 	// Responsible for performing Ajax using jquery.
 	// =========================================================
-	var Sync = Barebone.Sync = function(method, model, form){
+	var Sync = Barebone.Sync = function(method, model, form, options){
 		// Map from CRUD to HTTP for our default `Backbone.sync` implementation.
         var methodMap = {
             'create': 'POST',
@@ -124,33 +139,53 @@
             'read':   'GET'
         };
 	   
+		// For create and update request, we use ajaxSubmit().
+		// For delete and read request, we use ajax();
+		// For patch request, we don't care.
 		if(method == "create" || method == "update"){
 			$(form).ajaxSubmit({
 				url: model.url,
 				dataType: 'json',
-				data: {"access_token": gon.token},
+				data: options,
 				method: methodMap[method],
 				error: function(error, err) {
-					alert("Error!");
+					alert(method+" Error!");
 				},
-				success: function(msg) {
-					//probably shld call model.set here.
-					alert("success with id:"+msg.id);
+				success: function(data) {
+					// when create request succeed, we need to update
+					// model.url to the new model's url.
+					if(method == "create"){
+						var endPos = model.url.lastIndexOf(".");
+						model.url = model.url.substr(0, endPos)+ "/" + data.id + ".json";
+					}
+					
+					// Reset model.attributes and call fetch to update it.
+					model.attributes = {};
+					model.fetch(options);
 				}
 			});
 		}
-		else{
-			$.ajax({
+		else{	//for GET and DELETE
+			$.ajax({	
 				url: model.url,
 				type: methodMap[method],
 				dataType: 'json',
-				success: function(){
-					alert("get model succeed!");
+				data: options,
+				success: function(data){
+					// data will be undefined if it is a destroy request.
+					// set model attributes to the one on server.
+					if(typeof data != 'undefined'){
+						model.attributes = {};
+						model.set(data);
+					}
+					
+					// If this ajax call succeed, that means the model is
+					// on the server. Therefore it is not a new model.
+					model.isNew = false;
 				}
 			});
 		}
 	}
-	
 	
 	// =========================================================
 	// Helper methods
