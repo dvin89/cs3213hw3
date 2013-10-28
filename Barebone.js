@@ -100,7 +100,7 @@
 		
 		template: function(templateName, data, settings){
 			_.template(templateName, data, settings);
-		}.
+		},
 		
 		// Return whatever is in View.attribute[attributeKey].
 		get: function(attributeKey){
