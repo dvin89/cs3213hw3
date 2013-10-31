@@ -88,7 +88,8 @@
 		// We add default events to handle for view.
 		this.event.on("change", function(){
 			//stub. what to do when view is change?
-		} );
+		} );	
+		
 	};
 	
 	// Methods for View class will be added to View.prototype via _.extend.
@@ -100,7 +101,7 @@
 		
 		template: function(templateName, data, settings){
 			_.template(templateName, data, settings);
-		}.
+		},
 		
 		// Return whatever is in View.attribute[attributeKey].
 		get: function(attributeKey){
@@ -135,6 +136,18 @@
 		
 		// Default render is a no-op
 		render: function(){},
+		
+		setup : function() {
+			var domEvents = this.events;
+						
+			for(var domE in domEvents) {
+				var arr = domE.split(" ");							
+				//$(arr[1]).on(domE, function() { this.});
+				
+			}		
+			
+		},		
+		
 	});
 	
 	// =========================================================
