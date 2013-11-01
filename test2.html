@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <script src="jquery-1.10.2.min.js"></script>
+  <script src="underscore.js"></script>
+  <script src="backbone.js"></script>
+  <script src="Barebone.js"></script>
+  <script src="jquery.form.min.js"></script>
+</head>
+<body>
+<input type="button" id="haha" value="haha"  />
+<input type="button" id="hehe" value="hehe"  />
+
+<script type="text/javascript">
+	// type whatever code you wanted to test here. 
+	// console.log() and alert() function are useful for debugging.
+	
+	var aView = Barebone.View.extend({
+		
+			events : {
+				"click #haha" : "doHaha",
+				"click #hehe" : "doHehe",
+			},
+			
+			doHaha : function() {
+				console.log("haha");
+			},
+			
+			doHehe : function() {
+				console.log("hehe");
+			},
+			
+	});
+		
+	aView.setup();
+	
+	function buttonClick(){
+		//on click we create our new movie model
+		
+	}
+	
+</script>
+
+</body>
+</html> 
