@@ -10,19 +10,23 @@
 	// =====================================================
 	var Model = Barebone.Model = function(){
 		this.isNew = true;
-		this.attributes = {};
 		this.event = new Event();
-		
-		// We add default events to handle for model.
-		this.event.on("change", function(){
-			//stub. what to do when model is change?
-		} );
+		this.attributes = {},
+		this.initialize.apply(this, arguments);
+		this.id=1;
+
 	};
 	
 	// Methods for Model class will be added to Model.prototype via _.extend.
 	_.extend(Model.prototype, {
 		// This is for the model url. Is it going to be a function?
 		url: "",
+
+		initialize: function(){},
+		
+		toJSON: function() {
+			return _.clone(this.attributes);
+		},	
 		
 		// Return whatever is in Model.attribute[attributeKey].
 		get: function(attributeKey){
@@ -32,6 +36,7 @@
 		// Set Model.attribute[key] to value -OR- set Model.attributes to
 		// whatever is in the {key: value} parameter.
 		set: function(key, value){
+			
 			if (key == null) return this;
 			
 			// Handle both `"key", value` and `{key: value}` -style arguments.
@@ -43,21 +48,25 @@
 					if( this.attributes[keyArr[i]] != obj[keyArr[i]]){                    
 						//something changed
 						this.attributes[keyArr[i]] = obj[keyArr[i]];
-						this.event.trigger("change");
+						//this.event.trigger("change");
 					}
 				}
 			} else {
 				if( this.attributes[key] != value){                    
 					//something changed
 					this.attributes[key] = value;
-					this.event.trigger("change");
+					//this.event.trigger("change");
 				}
 			}
+			//console.log(this.attributes);
+			//this.event.trigger("change");
+			return this.attributes;
 		},
 		
 		// perform GET on this.url.
 		fetch: function(options){
-			var instance = this;
+			var instance=this;
+
 			Sync("read", this, null, options);
 		},
 		
@@ -96,6 +105,8 @@
 	_.extend(View.prototype, {
 		// This is the view DOM div element. Must be an element id for now.
 		el: "",
+		template: "",
+		model: {},
 		
 		$el: function(){return $(document.getElementById(this.el));},
 		
@@ -139,13 +150,16 @@
 		
 		setup : function() {
 			var domEvents = this.events;
-						
+
 			for(var domE in domEvents) {
-				var arr = domE.split(" ");							
-				//$(arr[1]).on(domE, function() { this.});
-				
-			}		
-			
+				var arr = domE.split(" ");
+				// $(arr[1]).on(domE, domEvents[domE]);
+
+				if(typeof domEvents[domE] === 'string')
+					// $(this).parent().eval(domEvents[domE]);
+					console.log($(this).parent().prevObject.name);	
+			}
+
 		},		
 		
 	});
@@ -163,7 +177,7 @@
 		
 		// Add events eventMap
 		this.on = function(name, callback){
-			instance.eventMap[name] = callback;
+			instance.eventMap[name] = callback;			
 		};
 		
 		// Delete events from eventMap
@@ -235,8 +249,11 @@
 					if(typeof data != 'undefined'){
 						model.attributes = {};
 						model.set(data);
-					}
-					
+						}
+
+					//triggering event after the ajax call above is complete						
+					model.event.trigger('change');
+
 					// If this ajax call succeed, that means the model is
 					// on the server. Therefore it is not a new model.
 					model.isNew = false;

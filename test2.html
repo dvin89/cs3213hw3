@@ -17,22 +17,23 @@
 	
 	var aView = Barebone.View.extend({
 		
-			events : {
-				"click #haha" : "doHaha",
-				"click #hehe" : "doHehe",
-			},
-			
-			doHaha : function() {
-				console.log("haha");
-			},
-			
-			doHehe : function() {
-				console.log("hehe");
-			},
+		events : {
+			"click #haha" : "doHaha",
+			"click #hehe" : "doHehe",
+		},
+		
+		doHaha : function() {
+			console.log("haha");
+		},
+		
+		doHehe : function() {
+			console.log("hehe");
+		},
 			
 	});
 		
 	aView.setup();
+
 	
 	function buttonClick(){
 		//on click we create our new movie model
