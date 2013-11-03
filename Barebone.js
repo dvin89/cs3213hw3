@@ -139,13 +139,16 @@
 		
 		setup : function() {
 			var domEvents = this.events;
-						
+
 			for(var domE in domEvents) {
-				var arr = domE.split(" ");							
-				//$(arr[1]).on(domE, function() { this.});
-				
-			}		
-			
+				var arr = domE.split(" ");
+				// $(arr[1]).on(domE, domEvents[domE]);
+
+				if(typeof domEvents[domE] === 'string')
+					// $(this).parent().eval(domEvents[domE]);
+					console.log($(this).parent().prevObject.name);	
+			}
+
 		},		
 		
 	});
@@ -163,7 +166,7 @@
 		
 		// Add events eventMap
 		this.on = function(name, callback){
-			instance.eventMap[name] = callback;
+			instance.eventMap[name] = callback;			
 		};
 		
 		// Delete events from eventMap
