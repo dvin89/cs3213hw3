@@ -6,9 +6,14 @@
   <script src="backbone.js"></script>
   <script src="Barebone.js"></script>
   <script src="jquery.form.min.js"></script>
+  
+  <title> MOAI Movie App</title>
 </head>
 <body>
-<div style='margin-left: 20px;' id='movieForm'>
+
+<!--Create Movie Form-->
+<div style='margin-left: 20px;display: none;font-family:calibri,verdana;' id='movieForm'>
+<input type='button' id='hideshow' value='Show All'  onclick="showDiv('movieAll'); hideDiv('movieForm')" >
 	<form id='myForm' name='movie' method='POST'>
 		<table>
 			<tr><td colspan=2><h1>Create new movie</h1></td></tr>
@@ -19,6 +24,64 @@
 		</table>
 	</form>
 </div>
+
+<!--Display of all movies-->
+<div id='movieAll' style="font-family:calibri,verdana;">
+
+</div>
+
+<script type="text/html" id="movieAllTemplate">
+	<center>
+	<h1> MOAI Movie App</h1>
+	<input type='button' id='hideshow' value='Previous'  onclick="showPrevious();" >
+	<input type='button' id='hideshow' value='Create Movie'  onclick="showDiv('movieForm'); hideDiv('movieAll')" >
+	<input type='button' id='hideshow' value='Next'  onclick="showNext();" > 
+
+	<% var i=0 %>
+	<table cellspacing='0' cellpadding='3' border='1' bordercolor=#CCCCCC >
+		<tbody><tr>
+			<%_.each(items,function(item,key,list) {%>
+	 
+				<% if (i%4==0) { i=0; %></tr><tr><% } %>
+	 
+				<% i=i+1; %>
+
+				<td><center>
+					<a href="#" onclick="showMovie(<%= item.id %>);">	
+						<%= item.title %>
+						<br><img src="<%= item.img_url %>">
+						<br>Rating : <%= parseFloat(item.avg_score).toFixed(2)%>
+					</a>
+				</td>
+			<% }); %>
+		</tr></tbody>
+	</table>
+	<p>
+	<input type='button' id='hideshow' value='Previous'  onclick="showPrevious();" >
+	<input type='button' id='hideshow' value='Next'  onclick="showNext();" >
+	</font>
+	</center>
+	
+	
+</script>
+
+<!--Display of Individual movies-->
+<div id='movieIdv' style="font-family:calibri,verdana;display: none;">
+
+</div>
+<script type="text/html" id="idvMovieTemplate">
+		<center>
+		<table width=30% cellpadding=5 border=1 cellspacing=0 bordercolor=#CCCCCC>
+		<tr><td colspan=2><center><b><%= item.title %></b></center></b></td></tr>
+		<tr><td rowspan=4><img src="<%= item.img_url %>"></td>
+		<td><b>Rating : </b><%= parseFloat(item.avg_score).toFixed(2)%></td></tr>
+		<tr><td><b>Updated at: </b><%= item.updated_at %></td></tr>
+		<tr><td><b>Uploaded by: </b><%= item.user.username %></td></tr>
+		<tr><td valign=top><b>Summary: </b><%= item.summary %></td></tr>
+		</table>
+		<br><input type='button' id='back' value='Back'  onclick="back();" >
+		</center>
+</script>
 
 <script type="text/javascript">
 	// type whatever code you wanted to test here. 
@@ -34,7 +97,105 @@
 		totallyNewMovie.save(document.getElementById("myForm"));
 	}
 	
+	var A=Barebone.Model.extend({
+		url : 'http://cs3213.herokuapp.com/movies.json/?page=1',
+		initialize: function() {
+			}
+		});
+	
+	var v=Barebone.View.extend({
+		el: '#movieAll',
+		template: $("#movieAllTemplate").html(),
+		model: A,
+		initialize: function() {},
+
+		render:function(){
+			if(v.model.attributes[0]==undefined) {
+				v.model.id=v.model.id-1;
+				v.model.fetch(v.model.id);	
+			}
+			else{
+				var items=v.model.attributes;
+				$(this.el).html(_.template(this.template,{items:items}))
+				}
+			return this;
+	
+		},
+	});
+	v.event=v.model.event; //setting both the event obj for both view and model to be same
+	v.event.on("change", function(){	//setting event function
+			v.render(); 		//rendering is done only after the event is triggered, that is only after the ajax call is complete
+		} );
+	v.model.fetch();
+	
+	function showDiv(name) {
+		document.getElementById(name).style.display = "block";
+	}
+	
+	function hideDiv(name) {
+		document.getElementById(name).style.display = "none";
+	}
+	
+	function showNext(){
+		if(v.model.attributes[0]!=undefined) {
+			console.log(v.model.attributes);
+			v.model.id=v.model.id+1;
+			show();
+		}
+	}
+
+	function showPrevious(){
+		if(v.model.id==1) return;
+		console.log(v.model.attributes);
+		v.model.id=v.model.id-1;
+		show();
+
+	}
+	
+	function show(){
+		v.model.url=v.model.url.substring(0,v.model.url.length-1)+v.model.id;
+		console.log(v.model.url);
+		v.model.fetch();
+	}
+
+	function back(){
+		showDiv('movieAll');
+		hideDiv('movieIdv');
+	
+	}
+	
+	function showMovie(id){
+		console.log(id);
+		var AA=Barebone.Model.extend({
+		url : 'http://cs3213.herokuapp.com/movies/'+id+'.json',
+		initialize: function() {
+			}
+		});
+	
+		var vv=Barebone.View.extend({
+		el: '#movieIdv',
+		template: $("#idvMovieTemplate").html(),
+		model: AA,
+		initialize: function() {},
+
+		render:function(){
+			var item=vv.model.attributes;
+			$(this.el).html(_.template(this.template,{item:item}));
+			hideDiv('movieAll');
+			showDiv('movieIdv');
+			return this;
+		},
+	});
+	vv.event=vv.model.event; //setting both the event obj for both view and model to be same
+	vv.event.on("change", function(){	//setting event function
+	console.log(vv.model.attributes);
+			vv.render(); //rendering is done only after the event is triggered, that is only after the ajax call is complete
+		} );
+	vv.model.fetch();
+
+	}
 </script>
+
 
 </body>
 </html> 
