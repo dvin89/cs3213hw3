@@ -47,14 +47,14 @@
 					if( this.attributes[keyArr[i]] != obj[keyArr[i]]){                    
 						//something changed
 						this.attributes[keyArr[i]] = obj[keyArr[i]];
-						//this.event.trigger("change");
+						this.event.trigger("change");
 					}
 				}
 			} else {
 				if( this.attributes[key] != value){                    
 					//something changed
 					this.attributes[key] = value;
-					//this.event.trigger("change");
+					this.event.trigger("change");
 				}
 			}
 			//console.log(this.attributes);
@@ -91,13 +91,7 @@
 	// =========================================================
 	var View = Barebone.View = function(){
 		this.attributes = {};
-		this.event = new Event();		
-		
-		// We add default events to handle for view.
-		this.event.on("change", function(){
-			//stub. what to do when view is change?
-		} );	
-		
+		this.initialize.apply(this, arguments);
 	};
 	
 	// Methods for View class will be added to View.prototype via _.extend.
@@ -105,13 +99,15 @@
 		// This is the view DOM div element. Must be an element id for now.
 		el: "",
 		template: "",
-		model: {},
+		models: {},
 		
 		$el: function(){return $(document.getElementById(this.el));},
 		
 		template: function(templateName, data, settings){
 			_.template(templateName, data, settings);
 		},
+		
+		initialize: function(){},
 		
 		// Return whatever is in View.attribute[attributeKey].
 		get: function(attributeKey){
@@ -132,14 +128,12 @@
 					if( this.attributes[keyArr[i]] != obj[keyArr[i]]){                    
 						//something changed
 						this.attributes[keyArr[i]] = obj[keyArr[i]];
-						this.event.trigger("change");
 					}
 				}
 			} else {
 				if( this.attributes[key] != value){                    
 					//something changed
 					this.attributes[key] = value;
-					this.event.trigger("change");
 				}
 			}
 		},
@@ -175,8 +169,13 @@
 		this.eventMap = {};
 		
 		// Add events eventMap
-		this.on = function(name, callback){
-			instance.eventMap[name] = callback;			
+		// callback tell us the function to execute.
+		// context tell us which object is responsible for carrying out the callback function
+		this.on = function(name, callback, context){
+			if(instance.eventMap[name])
+				instance.eventMap[name].push({callback:callback, context:context});
+			else
+				instance.eventMap[name] = [{callback:callback, context:context}];
 		};
 		
 		// Delete events from eventMap
@@ -185,13 +184,26 @@
 		};
 		
 		// Execute the function corresponding to the event
-		this.trigger = function(name){
-			var func = instance.eventMap[name];
-			
-			var args = Array.prototype.slice.call(arguments);
-			args.splice(0, 1);
-		
-			func.apply(this, args);
+		this.trigger = function(name, context){
+			var list = instance.eventMap[name];
+			var func;
+			for(i=0; i<list.length; i++){
+				if(context){	//context is defined. We can only trigger context method
+					if(list[i].context === context){
+						func = list[i].callback;
+						var args = Array.prototype.slice.call(arguments);
+						args.splice(0, 2);
+						func.apply(context, args);
+						break;
+					}
+				}
+				else{	//context is undefined. We trigger all callback method
+					var args = Array.prototype.slice.call(arguments);
+					args.splice(0, 1);
+					func = list[i].callback;
+					func.apply(list[i].context, args);
+				}
+			}
 		};
 	}
 	
