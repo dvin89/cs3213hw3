@@ -14,7 +14,6 @@
 		this.attributes = {},
 		this.initialize.apply(this, arguments);
 		this.id=1;
-
 	};
 	
 	// Methods for Model class will be added to Model.prototype via _.extend.
@@ -268,20 +267,32 @@
 	// Currently only allow 1 layer of inheritance. 
 	// Parent -> child is OK.
 	// Parent -> child -> grandchild is NOT OK.
-	var extend = function(protoProps){
+	var extend = function(staticProps){
 		var parent = this;
+		var child;
 		
-		// add additional methods to parent.prototype.
-		_.extend(parent.prototype, protoProps);
+		//child is the child class therefore it must be a function.
+		//Dummy is created using parent.[[constructor]] therefore it will have
+		//the properties of parent.
+		//We then add staticProps to dummy and return dummy.
+		child = function(){	//this will be the constructor of child class
+			dummy = new parent();	
+			if (staticProps) _.extend(dummy, staticProps);
+			return dummy;
+		}
+
+		//Set prototype of child class to a new instance of parent.
+		//This is the easiest way to do inheritance
+		child.prototype = new parent();
 		
-		var child = new parent();
+		//Extend child with extra methods.
+		//if (protoProps) _.extend(child.prototype, protoProps);
 		
-		// Add static properties
-		_.extend(child, parent);
+		//Set constructor to child.
+		child.prototype.constructor = child;
 		
 		return child;
 	}
 	Model.extend = View.extend = extend;
-
 
 }).call(this);
