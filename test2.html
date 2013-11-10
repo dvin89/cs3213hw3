@@ -15,30 +15,27 @@
 	// type whatever code you wanted to test here. 
 	// console.log() and alert() function are useful for debugging.
 	
-	var aView = Barebone.View.extend({
+	var viewClass = Barebone.View.extend({
 		
-		events : {
+		events: {
 			"click #haha" : "doHaha",
 			"click #hehe" : "doHehe",
 		},
-		
+
+
 		doHaha : function() {
 			console.log("haha");
 		},
 		
 		doHehe : function() {
 			console.log("hehe");
-		},
-			
-	});
-		
-	aView.setup();
+		},	
 
-	
-	function buttonClick(){
-		//on click we create our new movie model
-		
-	}
+	});
+
+
+	var aView = new viewClass();
+	aView.registerDomEvents();
 	
 </script>
 
