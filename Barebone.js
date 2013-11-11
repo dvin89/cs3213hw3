@@ -90,6 +90,7 @@
 			var instance = this;
 			Sync("delete", this, null, options);
 		},
+
 	});
 	
 	// =========================================================
@@ -106,7 +107,8 @@
 		// This is the view DOM div element. Must be an element id for now.
 		el: "",
 		template: "",
-		models: {},
+		models: {},	
+		events: {},
 		
 		$el: function(){return $(document.getElementById(this.el));},
 		
@@ -147,21 +149,22 @@
 		
 		// Default render is a no-op
 		render: function(){},
-		
-		setup : function() {
-			var domEvents = this.events;
 
-			for(var domE in domEvents) {
-				var arr = domE.split(" ");
-				// $(arr[1]).on(domE, domEvents[domE]);
+		//Registering all specified DOM events
+		registerDomEvents : function() {
+			var domEvents = this.events;			//Dom Events
 
-				if(typeof domEvents[domE] === 'string')
-					// $(this).parent().eval(domEvents[domE]);
-					console.log($(this).parent().prevObject.name);	
-			}
+			//Looping through all the events are registering them.
+			for(var domEvent in domEvents) {
+				//Converting the callback function from a string to a function type
+				var func = _.bind(this[domEvents[domEvent]], this);
+				//Splitting the domEvent String object
+				var domArr = domEvent.split(" ");
 
-		},		
-		
+				//Register and listen to event; specify callback function using jQuery's .on function
+				$(domArr[1]).on(domEvent, func);
+			}		
+		}	
 	});
 	
 	// =========================================================
