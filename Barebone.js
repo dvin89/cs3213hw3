@@ -28,7 +28,9 @@
 		},	
 		
 		// Return whatever is in Model.attribute[attributeKey].
-		get: function(attributeKey){
+		get: function(attributeKey, index){
+			if(Object.prototype.toString.call( this.attributes ) === '[object Array]')
+				return this.attribute[index][attributeKey];
 			return this.attribute[attributeKey];
 		},
 		
@@ -37,24 +39,29 @@
 		set: function(key, value){
 			
 			if (key == null) return this;
-			
-			// Handle both `"key", value` and `{key: value}` -style arguments.
-			if (typeof key === 'object') {	// this is the {key: value} form
-				var obj = key;    //change name to make intent more obvious
-				var keyArr = Object.keys(obj);
+			if(Object.prototype.toString.call( key ) === '[object Array]'){
+				this.attributes = key;
+				this.event.trigger("change");
+			}
+			else{
+				// Handle both `"key", value` and `{key: value}` -style arguments.
+				if (typeof key === 'object') {	// this is the {key: value} form
+					var obj = key;    //change name to make intent more obvious
+					var keyArr = Object.keys(obj);
 
-				for(var i = 0; i<keyArr.length; i++){
-					if( this.attributes[keyArr[i]] != obj[keyArr[i]]){                    
+					for(var i = 0; i<keyArr.length; i++){
+						if( this.attributes[keyArr[i]] != obj[keyArr[i]]){                    
+							//something changed
+							this.attributes[keyArr[i]] = obj[keyArr[i]];
+							this.event.trigger("change");
+						}
+					}
+				} else {
+					if( this.attributes[key] != value){                    
 						//something changed
-						this.attributes[keyArr[i]] = obj[keyArr[i]];
+						this.attributes[key] = value;
 						this.event.trigger("change");
 					}
-				}
-			} else {
-				if( this.attributes[key] != value){                    
-					//something changed
-					this.attributes[key] = value;
-					this.event.trigger("change");
 				}
 			}
 			//console.log(this.attributes);
