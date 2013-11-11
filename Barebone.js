@@ -30,8 +30,8 @@
 		// Return whatever is in Model.attribute[attributeKey].
 		get: function(attributeKey, index){
 			if(Object.prototype.toString.call( this.attributes ) === '[object Array]')
-				return this.attribute[index][attributeKey];
-			return this.attribute[attributeKey];
+				return this.attributes[index][attributeKey];
+			return this.attributes[attributeKey];
 		},
 		
 		// Set Model.attribute[key] to value -OR- set Model.attributes to
@@ -120,7 +120,7 @@
 		
 		// Return whatever is in View.attribute[attributeKey].
 		get: function(attributeKey){
-			return this.attribute[attributeKey];
+			return this.attributes[attributeKey];
 		},
 		
 		// Set View.attribute[key] to value -OR- set View.attributes to
